@@ -21,7 +21,6 @@ DEBUG=False/True    # False puhul Django admin näeb kole välja.
 SECRET_KEY=<key>    # Genereerige <key> asemele suvalistest tähemärkidest koosnev jada.
 ```
 - Loo andmebaas (SQLite): `poetry run task migrate`
+- Loo esimene kasutaja: `poetry run python manage.py createsuperuser` ning seejärel sisesta soovitud andmed. NB! Järgnevad kasutajad luua Django adminis.
 - Käivita veebiserver: `poetry run task start`
 - Minge lehele http://localhost:8000 .
-
-
