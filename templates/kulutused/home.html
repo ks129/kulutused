@@ -1,0 +1,155 @@
+{% extends 'kulutused/../base.html' %}
+{% load django_bootstrap5 %}
+{% load bootstrap_icons %}
+
+{% block title %}Avaleht{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.2.1/chart.umd.js" integrity="sha512-vCUbejtS+HcWYtDHRF2T5B0BKwVG/CLeuew5uT2AiX4SJ2Wff52+kfgONvtdATqkqQMC9Ye5K+Td0OTaz+P7cw==" crossorigin="anonymous"></script>
+    <script>
+        new Chart(document.getElementById("userchart"), {
+            type: 'bar',
+            data: {
+                labels: [{% for user in total_per_user.keys %}"{{ user.get_full_name }}", {% endfor %}],
+                datasets: [{
+                    label: "Üldsumma",
+                    data: [{% for amount in total_per_user.values %}{{ amount }}, {% endfor %}],
+                    backgroundColor: [
+                        {% for amount in total_per_user.values %}
+                            {% if amount < 0 %}"rgba(255, 99, 132, 0.2)"{% else %}"rgba(75, 192, 192, 0.2)"{% endif %},
+                        {% endfor %}
+                    ],
+                    borderColor: [
+                        {% for amount in total_per_user.values %}
+                            {% if amount < 0 %}"rgb(255, 99, 132)"{% else %}"rgb(75, 192, 192)"{% endif %},
+                        {% endfor %}
+                    ],
+                    borderWidth: 1,
+                }],
+            },
+            options: {
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function (item) {
+                                return item.parsed.y + " €";
+                            },
+                        },
+                    },
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: function(value, _index, _ticks) {
+                                return value + " €";
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row mt-4">
+            <div class="col">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'add_debt' %}" class="btn btn-primary mb-2">Lisa võlgnevus</a>
+
+                    <h4>Minu võlgnevused</h4>
+                    <p><small>Võlgnevuse kustutamiseks märkige summaks 0 €.</small></p>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Kellele?</th>
+                                <th scope="col">Summa</th>
+                                <th scope="col">Kommentaar</th>
+                                <th scope="col">Muuda</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for debt in my_debts %}
+                            <tr>
+                                <td>{{ debt.id }}</td>
+                                <td>{{ debt.to_who.get_full_name }}</td>
+                                <td>{{ debt.amount }} €</td>
+                                <td>{{ debt.comments }}</td>
+                                <td><a href="{% url 'update_debt' debt.id %}" class="btn btn-secondary">{% bs_icon 'pencil-square' %}</a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <h4>Teiste võlgnevused minule</h4>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Kes?</th>
+                                <th scope="col">Summa</th>
+                                <th scope="col">Kommentaar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for debt in others_debts %}
+                            <tr>
+                                <td>{{ debt.id }}</td>
+                                <td>{{ debt.payer.get_full_name }}</td>
+                                <td>{{ debt.amount }} €</td>
+                                <td>{{ debt.comments }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>Palun logi sisse enda võlgnevuste nägemiseks.</p>
+                {% endif %}
+            </div>
+            <div class="col">
+                <h4>Kasutajad</h4>
+                <canvas id="userchart"></canvas>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Kasutaja</th>
+                            <th scope="col">Üldsumma</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user, balance in total_per_user.items %}
+                            <tr>
+                                <td>{{ user.get_full_name }}</td>
+                                <td>{{ balance }} €</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h4>Summaarsed võlgnevused</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Kes?</th>
+                            <th scope="col">Kellele?</th>
+                            <th scope="col">Summa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for users, amount in pairs.items %}
+                            {% if amount > 0 %}
+                                <tr>
+                                    <td>{{ users.0.get_full_name }}</td>
+                                    <td>{{ users.1.get_full_name }}</td>
+                                    <td>{{ amount }} €</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
