@@ -9,11 +9,12 @@ from kulutused.forms import DebtForm
 from kulutused.models import Debt
 
 
-class DebtCreateView(LoginRequiredMixin, CreateView, SuccessMessageMixin):
+class DebtCreateView(SuccessMessageMixin, LoginRequiredMixin, CreateView):
     """Creation view for Debt model."""
 
     model = Debt
     success_url = '/'
+    success_message = 'Võlgnevus on registreeritud.'
     template_name = 'kulutused/create_debt.html'
     form_class = DebtForm
 
@@ -22,6 +23,7 @@ class DebtCreateView(LoginRequiredMixin, CreateView, SuccessMessageMixin):
         self.object = form.save(commit=False)
         self.object.payer = self.request.user
         self.object.save()
+        super(DebtCreateView, self).form_valid(form)
 
         return HttpResponseRedirect(self.get_success_url())
 
@@ -32,11 +34,12 @@ class DebtCreateView(LoginRequiredMixin, CreateView, SuccessMessageMixin):
         return kwargs
 
 
-class DebtUpdateView(LoginRequiredMixin, UpdateView, SuccessMessageMixin):
+class DebtUpdateView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
     """Update view for Debt model."""
 
     model = Debt
     success_url = '/'
+    success_message = 'Võlgnevus on uuendatud.'
     template_name = 'kulutused/edit_debt.html'
     form_class = DebtForm
 

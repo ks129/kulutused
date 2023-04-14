@@ -15,6 +15,10 @@ class UserLoginForm(AuthenticationForm):
         widget=PasswordInput(attrs={'autocomplete': 'current-password'})
     )
 
+    error_messages = {
+        'invalid_login': 'Vale kasutajanimi või parool.',
+    }
+
     def __init__(self, *args, **kwargs):
         super(UserLoginForm, self).__init__(*args, **kwargs)
 
